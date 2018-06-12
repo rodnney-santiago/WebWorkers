@@ -14,15 +14,61 @@
     <label for="wordTo">Name To:</label>
     <input type="text" name="wordTo" id="wordTo" placeholder="Enter word to reverse">
     <br>
-    <button id="Reverse Word">Reverse</button>    
+    <button id="reverse">Reverse Word</button>   
+    <div id="result"></div> 
+</section>
+<section>
+    <h1>Counter Sampl</h1>
+    <br>
+    <div id="counter"></div>
+    <button id="start">Start Counting</button>
+    <button id="end">End Counter</button>
+    <div id="msg"></div>
 </section>
 <script>
-    function reverseWord(){
-        var wordTo = document.getElementById("wordTo").value;
-        alert('Word to Reverse: ' + wordTo);
-    }
+    var $reverse = document.getElementById("reverse");
+    var $result = document.getElementById("result");
 
-    document.addEventListener("click", reverseWord, false);
+    var $counter = document.getElementById("counter");
+    var $start = document.getElementById("start");
+    var $end = document.getElementById("end");
+    var $msg = document.getElementById("msg");
+
+    $reverse.onclick = function(){
+        var wordTo = document.getElementById("wordTo").value;
+
+        if(typeof(Worker) !== "undefined"){
+            var wk = new Worker("reverseWords.js");
+            wk.onmessage = function(event){
+                $result.innerText = event.data;
+            };
+            wk.postMessage(wordTo);
+        }
+        else{
+            $result.innerText = "Browser does not support HTML5 Web Worker!";
+        }
+    };
+
+    var counterWorker = undefined;
+
+    $start.onclick = function(){
+        if(typeof(Worker) !== "undefined"){
+            if(typeof(counterWorker) === "undefined"){
+                counterWorker = new Worker("counter.js");
+                counterWorker.onmessage = function(event){
+                    $counter.innerText = "Counter: " + event.data;
+                };
+            }
+        }
+        else{
+            $msg.innerText = "Browser does not support HTML5 Web Worker!";
+        }
+    };
+
+    $end.onclick = function(){
+        counterWorker.terminate();
+        counterWorker = undefined;
+    };
 </script>
 </body>
 </html>
